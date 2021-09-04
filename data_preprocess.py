@@ -212,7 +212,7 @@ def get_label(x, y):
 
 def get_new_feats(df):
     """
-    add new features
+    add new features (DO NOT use on test set)
     :param df: DataFrame
     :return:
     """
@@ -226,8 +226,18 @@ def get_new_feats(df):
     # missing distance
     df['distance'] = df['distance'].replace(np.nan, -1).astype(int)
     # date related
-    df['month_received'] = df['date_received'].apply(get_month)
-    df['month_used'] = df['date_used'].apply(get_month)
+    # df['month_received'] = df['date_received'].apply(get_month)
+    # df['month_used'] = df['date_used'].apply(get_month)
+
+    return df
+
+
+def get_new_label(df):
+    """
+
+    :param df:
+    :return:
+    """
     # date_used and date_received
     df['days_gap'] = df.apply(lambda row: get_diff_btw_dates(row['date_received'], row['date_used']), axis=1)
     df['label'] = df.apply(lambda row: get_label(row['date_received'], row['date_used']), axis=1)
@@ -245,17 +255,18 @@ if __name__ == '__main__':
     # 2. online training set
     # df_on_train = read_data(file_name='ccf_online_stage1_train.csv')
     # 3. offline test set
-    # rename_cols = ['user_id', 'merchant_id', 'coupon_id', 'discount_rate',
-    #                'distance', 'date_received']
-    # df_off_test = read_data(file_name='ccf_offline_stage1_test_revised.csv', rename_col=rename_cols)
+    rename_cols = ['user_id', 'merchant_id', 'coupon_id', 'discount_rate',
+                   'distance', 'date_received']
+    df_off_test = read_data(file_name='ccf_offline_stage1_test_revised.csv', rename_col=rename_cols)
 
     # get features
     # 1. offline training set
     df_off_train_ = get_new_feats(df_off_train)
-    save_data(df_off_train_, file_name='ccf_offline_stage1_train_prep.csv')
-    # 2. online training set
-    # df_on_train_ = get_new_feats(df_on_train)
-    # save_data(df_on_train_, file_name='ccf_online_stage1_train_prep.csv')
+    df_off_train_ = get_new_label(df_off_train_)
+    save_data(df_off_train_, file_name='ccf_offline_stage1_train.csv')
+    # 2. offline test set
+    df_off_test_ = get_new_feats(df_off_test)
+    save_data(df_off_test_, file_name='ccf_online_stage1_test.csv')
     t1 = time.time()
     logger.info('process used time {0}s.'.format(round(t1 - t0), 3))
     logger.info('======== PREPROCESS END ========')
