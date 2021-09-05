@@ -6,10 +6,11 @@
 # @file: data_preprocess.py
 # @desc:
 
-import pandas as pd
+
 import numpy as np
 from datetime import date
 import time
+from utilities import read_data, save_data
 from logs import logger
 import warnings
 warnings.filterwarnings('ignore')
@@ -19,42 +20,6 @@ warnings.filterwarnings('ignore')
 is_sample = False
 original_data_dir = 'data/origin'
 prep_data_dir = 'data/prep'
-
-
-def read_data(file_name, rename_col=None, sample_sz=10000):
-    """
-    read local data file
-    :param file_name: string, format is like xxx.csv
-    :param rename_col: list
-    :param sample_sz: int, size of sample data, default is 10k
-    :return:
-    """
-    df = pd.read_csv('{0}/{1}'.format(original_data_dir, file_name), keep_default_na=True)
-    if not rename_col:
-        df.columns = ['user_id', 'merchant_id', 'coupon_id', 'discount_rate',
-                      'distance', 'date_received', 'date_used']
-    else:
-        df.columns = rename_col
-    if not is_sample:
-        pass
-    else:  # construct sample data
-        idx = list(df.sample(n=sample_sz, random_state=10).index)  # sample is for shuffling
-        df = df.iloc[idx, :]
-
-    print('length of df:', len(df))
-    return df
-
-
-def save_data(df, file_name):
-    """
-    save processed data
-    :param df:
-    :param file_name:
-    :return:
-    """
-
-    df.to_csv('{0}/{1}'.format(prep_data_dir, file_name), index=False)
-    logger.info('{0}/{1} is saved with length {2}'.format(prep_data_dir, file_name, len(df)))
 
 
 def get_discount_rate(s):
@@ -251,22 +216,24 @@ if __name__ == '__main__':
     t0 = time.time()
     # read original datafile
     # 1. offline training set
-    df_off_train = read_data(file_name='ccf_offline_stage1_train.csv')
+    df_off_train = read_data(file_name='ccf_offline_stage1_train.csv', data_dir=original_data_dir,
+                             is_sample=is_sample)
     # 2. online training set
     # df_on_train = read_data(file_name='ccf_online_stage1_train.csv')
     # 3. offline test set
     rename_cols = ['user_id', 'merchant_id', 'coupon_id', 'discount_rate',
                    'distance', 'date_received']
-    df_off_test = read_data(file_name='ccf_offline_stage1_test_revised.csv', rename_col=rename_cols)
+    df_off_test = read_data(file_name='ccf_offline_stage1_test_revised.csv', rename_col=rename_cols,
+                            data_dir=original_data_dir, is_sample=is_sample)
 
     # get features
     # 1. offline training set
     df_off_train_ = get_new_feats(df_off_train)
     df_off_train_ = get_new_label(df_off_train_)
-    save_data(df_off_train_, file_name='ccf_offline_stage1_train.csv')
+    save_data(df_off_train_, file_name='ccf_offline_stage1_train.csv', data_dir=prep_data_dir)
     # 2. offline test set
     df_off_test_ = get_new_feats(df_off_test)
-    save_data(df_off_test_, file_name='ccf_online_stage1_test.csv')
+    save_data(df_off_test_, file_name='ccf_online_stage1_test.csv', data_dir=prep_data_dir)
     t1 = time.time()
     logger.info('process used time {0}s.'.format(round(t1 - t0), 3))
     logger.info('======== PREPROCESS END ========')
