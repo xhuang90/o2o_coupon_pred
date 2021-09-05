@@ -210,8 +210,11 @@ def get_new_label(df):
     return df
 
 
-if __name__ == '__main__':
-
+def main():
+    """
+    main func
+    :return:
+    """
     logger.info('======== PREPROCESS START ========')
     t0 = time.time()
     # read original datafile
@@ -237,3 +240,8 @@ if __name__ == '__main__':
     t1 = time.time()
     logger.info('process used time {0}s.'.format(round(t1 - t0), 3))
     logger.info('======== PREPROCESS END ========')
+
+
+if __name__ == '__main__':
+
+    main()
