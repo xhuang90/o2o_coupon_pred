@@ -6,8 +6,7 @@
 # @file: feature_engineering.py
 # @desc:
 
-
-from utilities import read_data
+from utilities import read_data, add_count_new_feats
 import pandas as pd
 
 
@@ -19,13 +18,14 @@ def get_merchant_feats(df_feats):
     """
     # extract merchant related data
     related_cols = ['merchant_id', 'coupon_id', 'distance', 'date_received', 'date_used']
-    merchant = df_feats[related_cols].copy()
-
-    ids = merchant[['merchant_id']].copy()
-    # drop duplicated id
+    df_merchant = df_feats[related_cols].copy()
+    # get merchant ids then drop duplicates
+    ids = df_merchant[['merchant_id']].copy()
     ids.drop_duplicates(inplace=True)
-    #
-    # t1 = merchant
+    # count of transaction for each merchant
+    t1 = df_merchant[~df_merchant.date_used.isna()][['merchant_id']].copy()
+    df_merchant = add_count_new_feats(ids, t1, 'merchant_id', 'total_sales')
+    print(df_merchant.head())
 
 
 def read_df(data_dir, filename):
