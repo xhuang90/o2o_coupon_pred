@@ -144,7 +144,13 @@ def get_user_merchant_feats(df_feats):
     ids.drop_duplicates(inplace=True)
 
     # feat1. count of transaction between each user and merchant
-    # f1 =
+    f1 = df_feats[['user_id', 'merchant_id', 'date']].copy()
+    f1 = f1[~f1['date'].isna()][['user_id', 'merchant_id']]
+    df_user_merchant = utils.add_count_new_feats(df=ids, df_grp=f1, grp_cols=['user_id', 'merchant_id'],
+                                                 new_feat_name='user_merchant_pay_count')
+
+    # feat2. count of receiving coupon
+    print(df_user_merchant.head())
 
 
 def read_df(data_dir, filename):
@@ -167,7 +173,7 @@ def main():
 
     df_train = read_df(prep_data_dir, filename='ccf_offline_stage1_train.csv')
     print(df_train.columns)
-    get_user_feats(df_feats=df_train)
+    get_user_merchant_feats(df_feats=df_train)
 
 
 if __name__ == '__main__':
