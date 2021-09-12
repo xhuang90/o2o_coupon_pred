@@ -6,6 +6,8 @@
 # @file: utilities.py
 # @desc:
 
+import numpy as np
+from datetime import date
 import pandas as pd
 from logs import logger
 
@@ -55,6 +57,57 @@ def save_data(df, file_name, data_dir):
 
     df.to_csv('{0}/{1}'.format(data_dir, file_name), index=False)
     logger.info('{0}/{1} is saved with length {2}'.format(data_dir, file_name, len(df)))
+
+
+# get features
+def get_month(s):
+    """
+    get month of date
+    :param s:
+    :return:
+    """
+    # s = str(s)
+    if np.isnan(s):
+        return -1
+
+    else:
+        s = str(s)
+        return int(s[4: 6])
+
+
+def get_day(s):
+    """
+    get day of date
+    :param s:s
+    :return:
+    """
+    # s = str(s)
+    if np.isnan(s):
+        return -1
+
+    else:
+        s = str(s)
+        return int(s[6: 8])
+
+
+def get_diff_btw_dates(x, y):
+    """
+    get days difference btw tow dates
+    :param x: int, date_received, format is like yyyyMMdd
+    :param y: int, date_used, format is like yyyyMMdd
+    :return:
+    """
+
+    if np.isnan(x) or np.isnan(y):
+        return -1
+    else:
+        x = str(x)
+        y = str(y)
+        f_date = date(int(x[:4]), int(x[4:6]), int(x[6:8]))
+        l_date = date(int(y[:4]), int(y[4:6]), int(y[6:8]))
+        delta = l_date - f_date
+
+        return delta.days
 
 
 def add_agg_feat_names(df, df_grp, grp_cols, val_col, agg_ops, col_names):

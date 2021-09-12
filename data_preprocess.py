@@ -10,7 +10,7 @@
 import numpy as np
 from datetime import date
 import time
-from utilities import read_data, save_data
+import utilities as utils
 from logs import logger
 import warnings
 warnings.filterwarnings('ignore')
@@ -89,56 +89,6 @@ def get_full_reduction_save(s):
         return int(s[1])
 
 
-def get_month(s):
-    """
-    get month of date
-    :param s:
-    :return:
-    """
-    # s = str(s)
-    if np.isnan(s):
-        return -1
-
-    else:
-        s = str(s)
-        return int(s[4: 6])
-
-
-def get_day(s):
-    """
-    get day of date
-    :param s:s
-    :return:
-    """
-    # s = str(s)
-    if np.isnan(s):
-        return -1
-
-    else:
-        s = str(s)
-        return int(s[6: 8])
-
-
-def get_diff_btw_dates(x, y):
-    """
-    get days difference btw tow dates
-    :param x: int, date_received, format is like yyyyMMdd
-    :param y: int, date_used, format is like yyyyMMdd
-    :return:
-    """
-
-    if np.isnan(x) or np.isnan(y):
-        return -1
-    else:
-        x = str(x)
-        y = str(y)
-        f_date = date(int(x[:4]), int(x[4:6]), int(x[6:8]))
-        l_date = date(int(y[:4]), int(y[4:6]), int(y[6:8]))
-        delta = l_date - f_date
-
-        return delta.days
-
-
 def get_label(x, y):
     """
     get label according to date_used and date_received
@@ -204,7 +154,7 @@ def get_new_label(df):
     :return:
     """
     # date_used and date_received
-    df['days_gap'] = df.apply(lambda row: get_diff_btw_dates(row['date_received'], row['date']), axis=1)
+    df['days_gap'] = df.apply(lambda row: utils.get_diff_btw_dates(row['date_received'], row['date']), axis=1)
     df['label'] = df.apply(lambda row: get_label(row['date_received'], row['date']), axis=1)
 
     return df
@@ -219,24 +169,24 @@ def main():
     t0 = time.time()
     # read original datafile
     # 1. offline training set
-    df_off_train = read_data(file_name='ccf_offline_stage1_train.csv', data_dir=original_data_dir,
-                             is_sample=is_sample)
+    df_off_train = utils.read_data(file_name='ccf_offline_stage1_train.csv', data_dir=original_data_dir,
+                                   is_sample=is_sample)
     # 2. online training set
     # df_on_train = read_data(file_name='ccf_online_stage1_train.csv')
     # 3. offline test set
     rename_cols = ['user_id', 'merchant_id', 'coupon_id', 'discount_rate',
                    'distance', 'date_received']
-    df_off_test = read_data(file_name='ccf_offline_stage1_test_revised.csv', rename_col=rename_cols,
-                            data_dir=original_data_dir, is_sample=is_sample)
+    df_off_test = utils.read_data(file_name='ccf_offline_stage1_test_revised.csv', rename_col=rename_cols,
+                                  data_dir=original_data_dir, is_sample=is_sample)
 
     # get features
     # 1. offline training set
     df_off_train_ = get_new_feats(df_off_train)
     df_off_train_ = get_new_label(df_off_train_)
-    save_data(df_off_train_, file_name='ccf_offline_stage1_train.csv', data_dir=prep_data_dir)
+    utils.save_data(df_off_train_, file_name='ccf_offline_stage1_train.csv', data_dir=prep_data_dir)
     # 2. offline test set
     df_off_test_ = get_new_feats(df_off_test)
-    save_data(df_off_test_, file_name='ccf_online_stage1_test.csv', data_dir=prep_data_dir)
+    utils.save_data(df_off_test_, file_name='ccf_online_stage1_test.csv', data_dir=prep_data_dir)
     t1 = time.time()
     logger.info('process used time {0}s.'.format(round(t1 - t0), 3))
     logger.info('======== PREPROCESS END ========')
