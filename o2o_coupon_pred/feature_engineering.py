@@ -139,7 +139,12 @@ def get_user_merchant_feats(df_feats):
     :param df_feats: DataFrame, all data to extract features
     :return: DataFrame, with features of users
     """
-    pass
+    # get user-merchant ids then drop duplicates
+    ids = df_feats[['user_id', 'merchant_id']].copy()
+    ids.drop_duplicates(inplace=True)
+
+    # feat1. count of transaction between each user and merchant
+    # f1 =
 
 
 def read_df(data_dir, filename):
