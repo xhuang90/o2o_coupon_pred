@@ -204,8 +204,8 @@ def get_new_label(df):
     :return:
     """
     # date_used and date_received
-    df['days_gap'] = df.apply(lambda row: get_diff_btw_dates(row['date_received'], row['date_used']), axis=1)
-    df['label'] = df.apply(lambda row: get_label(row['date_received'], row['date_used']), axis=1)
+    df['days_gap'] = df.apply(lambda row: get_diff_btw_dates(row['date_received'], row['date']), axis=1)
+    df['label'] = df.apply(lambda row: get_label(row['date_received'], row['date']), axis=1)
 
     return df
 

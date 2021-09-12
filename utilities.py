@@ -27,7 +27,7 @@ def read_data(file_name, rename_col=None, sample_sz=10000, is_sample=False, data
     df = pd.read_csv('{0}/{1}'.format(data_dir, file_name), keep_default_na=True)
     if not rename_col:
         df.columns = ['user_id', 'merchant_id', 'coupon_id', 'discount_rate',
-                      'distance', 'date_received', 'date_used']
+                      'distance', 'date_received', 'date']
     else:
         df.columns = rename_col
     if not is_sample:
