@@ -150,6 +150,8 @@ def get_user_merchant_feats(df_feats):
                                                  new_feat_name='user_merchant_pay_count')
 
     # feat2. count of receiving coupon
+    f2 = df_feats[['user_id', 'merchant_id', 'coupon_id']].copy()
+    
     print(df_user_merchant.head())
 
 
