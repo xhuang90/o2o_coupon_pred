@@ -8,6 +8,9 @@
 
 import utilities as utils
 import pandas as pd
+from logs import logger
+import time
+import data_preprocess as prep
 
 
 def get_merchant_feats(df_feats):
@@ -195,32 +198,58 @@ def get_user_merchant_feats(df_feats):
     return df_user_merchant
 
 
-def read_df(data_dir, filename):
+def get_basic_feature(df, is_train):
     """
-
-    :param data_dir:
-    :param filename:
+    Version1. only basic features with preprocess
+    :param df: DataFrame
+    :param is_train:
     :return:
     """
+    logger.info('======== BASIC VERSION FEATURE PREPROCESS START ========')
+    t0 = time.time()
 
-    df_train = pd.read_csv('{0}/{1}'.format(data_dir, filename))
-    # construct sample data
-    idx = list(df_train.sample(n=1000, random_state=10).index)  # sample is for shuffling
-    df = df_train.iloc[idx, :]
+    # get features
+    # 1. offline training set
+    df_res = prep.get_new_feats(df)
+    df_res.drop_duplicates(inplace=True)
 
-    return df
+    file_name = 'ccf_offline_stage1_test_v1.csv'
+
+    if is_train:
+        df_res = prep.get_new_label(df_res)
+
+        file_name = 'ccf_offline_stage1_train_v1.csv'
+
+    utils.save_data(df_res, file_name=file_name, data_dir=feat_data_fir)
+
+    t1 = time.time()
+    logger.info('process used time {0}s.'.format(round(t1 - t0), 3))
+    logger.info('======== BASIC VERSION FEATURE PREPROCESS END ========')
+
+    return df_res
 
 
 def main():
 
-    df_train = read_df(prep_data_dir, filename='ccf_offline_stage1_train.csv')
+    # train features
+    df_train = utils.read_data(file_name='ccf_offline_stage1_train.csv', data_dir=origin_data_dir,
+                               is_sample=is_sample)
+    df_train_ = get_basic_feature(df=df_train, is_train=True)
     print(df_train.columns)
-    get_user_merchant_feats(df_feats=df_train)
+    print(df_train_.columns)
+
+    # test features
+    rename_cols = ['user_id', 'merchant_id', 'coupon_id', 'discount_rate', 'distance', 'date_received']
+    df_test = utils.read_data(file_name='ccf_offline_stage1_test_revised.csv', rename_col=rename_cols,
+                              data_dir=origin_data_dir, is_sample=is_sample)
+    df_test_ = get_basic_feature(df=df_test, is_train=False)
+    print(df_test.columns)
+    print(df_test_.columns)
 
 
 if __name__ == '__main__':
 
     is_sample = True
-    prep_data_dir = 'data/prep'
-
+    origin_data_dir = 'data/origin'
+    feat_data_fir = 'data/features'
     main()
