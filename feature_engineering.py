@@ -198,7 +198,7 @@ def get_user_merchant_feats(df_feats):
     return df_user_merchant
 
 
-def get_basic_feature(df, is_train):
+def basic_feature_version(df, is_train):
     """
     Version1. only basic features with preprocess
     :param df: DataFrame
@@ -229,22 +229,67 @@ def get_basic_feature(df, is_train):
     return df_res
 
 
+def relation_feature_version(df, is_train):
+    """
+    Version2. basic features and relation features
+    :param df: DataFrame
+    :param is_train:
+    :return:
+    """
+    logger.info('======== RELATION VERSION FEATURE PREPROCESS START ========')
+    t0 = time.time()
+
+    # get features
+    df_res = prep.get_new_feats(df)
+    # get merchant features
+    df_merchant_feat = get_merchant_feats(df_feats=df)
+    df_res = df_res.merge(df_merchant_feat, on='merchant_id', how='left')
+    # get user features
+    df_user_feat = get_user_feats(df_feats=df)
+    df_res = df_res.merge(df_user_feat, on='user_id', how='left')
+    # get user and merchant features
+    df_merchant_user_feat = get_user_merchant_feats(df_feats=df)
+    df_res = df_res.merge(df_merchant_user_feat, on=['user_id', 'merchant_id'], how='left')
+
+    df_res.drop_duplicates(inplace=True)
+
+    # file_name = 'ccf_offline_stage1_test_v2.csv'
+
+    if is_train:
+        df_res = prep.get_new_label(df_res)
+        # file_name = 'ccf_offline_stage1_train_v2.csv'
+
+    t1 = time.time()
+    logger.info('process used time {0}s.'.format(round(t1 - t0), 3))
+    logger.info('======== RELATION VERSION FEATURE PREPROCESS END ========')
+
+    return df_res
+
+
+def normal_feature_generator(feature_func):
+    """
+
+    :param feature_func:
+    :return:
+    """
+    print(feature_func.__name__)
+    # train features
+    # df_train = utils.read_data(file_name='ccf_offline_stage1_train.csv', data_dir=origin_data_dir,
+    #                            is_sample=is_sample)
+    # df_train_ = feature_func(df=df_train, is_train=True)
+    #
+    # # test features
+    # rename_cols = ['user_id', 'merchant_id', 'coupon_id', 'discount_rate', 'distance', 'date_received']
+    # df_test = utils.read_data(file_name='ccf_offline_stage1_test_revised.csv', rename_col=rename_cols,
+    #                           data_dir=origin_data_dir, is_sample=is_sample)
+    # df_test_ = feature_func(df=df_test, is_train=False)
+
+    # utils.save_data(df_train_, file_name=file_name, data_dir=feat_data_fir)
+
+
 def main():
 
-    # train features
-    df_train = utils.read_data(file_name='ccf_offline_stage1_train.csv', data_dir=origin_data_dir,
-                               is_sample=is_sample)
-    df_train_ = get_basic_feature(df=df_train, is_train=True)
-    print(df_train.columns)
-    print(df_train_.columns)
-
-    # test features
-    rename_cols = ['user_id', 'merchant_id', 'coupon_id', 'discount_rate', 'distance', 'date_received']
-    df_test = utils.read_data(file_name='ccf_offline_stage1_test_revised.csv', rename_col=rename_cols,
-                              data_dir=origin_data_dir, is_sample=is_sample)
-    df_test_ = get_basic_feature(df=df_test, is_train=False)
-    print(df_test.columns)
-    print(df_test_.columns)
+    normal_feature_generator(feature_func=get_basic_feature)
 
 
 if __name__ == '__main__':
