@@ -266,30 +266,63 @@ def relation_feature_version(df, is_train):
     return df_res
 
 
-def normal_feature_generator(feature_func):
+def basic_feature_generator(feature_func):
     """
 
     :param feature_func:
     :return:
     """
-    print(feature_func.__name__)
-    # train features
-    # df_train = utils.read_data(file_name='ccf_offline_stage1_train.csv', data_dir=origin_data_dir,
-    #                            is_sample=is_sample)
-    # df_train_ = feature_func(df=df_train, is_train=True)
-    #
-    # # test features
-    # rename_cols = ['user_id', 'merchant_id', 'coupon_id', 'discount_rate', 'distance', 'date_received']
-    # df_test = utils.read_data(file_name='ccf_offline_stage1_test_revised.csv', rename_col=rename_cols,
-    #                           data_dir=origin_data_dir, is_sample=is_sample)
-    # df_test_ = feature_func(df=df_test, is_train=False)
 
-    # utils.save_data(df_train_, file_name=file_name, data_dir=feat_data_fir)
+    # train features
+    df_train = utils.read_data(file_name='ccf_offline_stage1_train.csv', data_dir=origin_data_dir,
+                               is_sample=is_sample)
+    df_train = df_train[(~df_train['coupon_id'].isna()) & (~df_train['date_received'].isna())]
+    df_train_ = feature_func(df=df_train, is_train=True)
+
+    # test features
+    rename_cols = ['user_id', 'merchant_id', 'coupon_id', 'discount_rate', 'distance', 'date_received']
+    df_test = utils.read_data(file_name='ccf_offline_stage1_test_revised.csv', rename_col=rename_cols,
+                              data_dir=origin_data_dir, is_sample=is_sample)
+    df_test_ = feature_func(df=df_test, is_train=False)
+
+    df_train_.drop(['date', 'merchant_id'], axis=1, inplace=True)
+    df_test_.drop(['merchant_id'], axis=1, inplace=True)
+
+    # save train and test dataset
+    utils.save_data(df_train_, file_name='train_{}'.format(feature_func.__name__), data_dir=feat_data_fir)
+    utils.save_data(df_test_, file_name='test_{}'.format(feature_func.__name__), data_dir=feat_data_fir)
+
+
+def relation_feature_generator(feature_func):
+    """
+
+    :param feature_func:
+    :return:
+    """
+    # train features
+    df_train = utils.read_data(file_name='ccf_offline_stage1_train.csv', data_dir=origin_data_dir,
+                               is_sample=is_sample)
+    df_train = df_train[(~df_train['coupon_id'].isna()) & (~df_train['date_received'].isna())]
+    df_train_ = feature_func(df=df_train, is_train=True)
+
+    # # test features
+    rename_cols = ['user_id', 'merchant_id', 'coupon_id', 'discount_rate', 'distance', 'date_received']
+    df_test = utils.read_data(file_name='ccf_offline_stage1_test_revised.csv', rename_col=rename_cols,
+                              data_dir=origin_data_dir, is_sample=is_sample)
+    df_test_ = feature_func(df=df_test, is_train=False)
+    #
+    print(df_test_.columns)
 
 
 def main():
+    """
+    main function
 
-    normal_feature_generator(feature_func=get_basic_feature)
+    :return:
+    """
+
+    basic_feature_generator(feature_func=basic_feature_version)
+    # relation_feature_generator(feature_func=relation_feature_version)
 
 
 if __name__ == '__main__':

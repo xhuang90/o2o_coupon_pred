@@ -55,7 +55,7 @@ def save_data(df, file_name, data_dir):
     if data_dir is None:
         raise ValueError(print('data_dir cannot be None.'))
 
-    df.to_csv('{0}/{1}'.format(data_dir, file_name), index=False)
+    df.to_csv('{0}/{1}.csv'.format(data_dir, file_name), index=False)
     logger.info('{0}/{1} is saved with length {2}'.format(data_dir, file_name, len(df)))
 
 
